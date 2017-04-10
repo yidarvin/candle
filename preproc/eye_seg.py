@@ -2,6 +2,7 @@ import h5py
 import numpy as np
 from os import listdir,mkdir
 from os.path import isdir,join
+import scipy
 import scipy.misc
 from skimage.filters import threshold_otsu
 from skimage import measure
@@ -39,13 +40,16 @@ def tight_crop(img,ann,size=None):
     y_hi = np.max(ys)
     x_lo = np.min(xs)
     x_hi = np.max(xs)
-    img = img.astype(np.float32)
-    img /= 255
     img_crop = img[y_lo:y_hi, x_lo:x_hi, :]
     ann_crop = ann[y_lo:y_hi, x_lo:x_hi]
     if size:
         img_crop = scipy.misc.imresize(img_crop,[size,size])
         ann_crop = scipy.misc.imresize(ann_crop,[size,size],interp='nearest')
+    img_crop = img_crop.astype(np.float32)
+    img_crop /= 255
+    ann_crop = (ann_crop > 0) + 0
+    ann_crop = scipy.ndimage.morphology.binary_dilation(ann_crop, iterations=size/56)
+    ann_crop = ann_crop.astype(np.int64)
     return img_crop,ann_crop
 
 # Crawl through EXs
