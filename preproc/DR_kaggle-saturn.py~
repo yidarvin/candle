@@ -1,0 +1,87 @@
+import h5py
+import numpy as np
+from os import listdir, mkdir
+from os.path import isdir, join
+import scipy.misc
+from skimage.filters import threshold_otsu
+from skimage import measure,exposure
+
+size = 512
+
+# Filepaths
+path_data = '/home/dnr/Documents/data/DR_kaggle'
+path_csv  = '/home/dnr/Documents/data/kag_vmc_labels_ext.csv'
+path_save = '/home/dnr/Documents/data/DR_kaggle_512/training'
+# Corollaries
+list_data = listdir(path_data)
+if not isdir(path_save):
+    mkdir(path_save)
+
+
+# Function for tight cropping.
+def tight_crop(img):
+    img_gray = np.mean(img, 2)
+    img_bw = img_gray > threshold_otsu(img_gray)
+    img_label = measure.label(img_bw, background=0)
+    largest_label = np.argmax(np.bincount(img_label.flatten())[1:]) + 1
+    img_circ = (img_label == largest_label)
+    img_xs = np.sum(img_circ, 0)
+    img_ys = np.sum(img_circ, 1)
+    xs = np.where(img_xs > 0)
+    ys = np.where(img_ys > 0)
+    y_lo = np.min(ys)
+    y_hi = np.max(ys)
+    x_lo = np.min(xs)
+    x_hi = np.max(xs)
+    #img = img.astype(np.float32)
+    #img[:,:,0] *= (0 + img_circ).astype(np.float32)
+    #img[:,:,1] *= (0 + img_circ).astype(np.float32)
+    #img[:,:,2] *= (0 + img_circ).astype(np.float32)
+    #img = img.astype(int)
+    return img[y_lo:y_hi, x_lo:x_hi, :]
+
+# Creating dictionary for the CSV.
+eye2lab = {}
+with open(path_csv, 'r') as file_csv:
+    line = file_csv.readline()
+    line = file_csv.readline()
+    while line:
+        line = line.split(',')
+        eye  = line[0]
+        lab = line[1][:-1].replace(' ', '')
+        lab  = int(lab)
+        eye2lab[eye] = lab
+        line = file_csv.readline()
+
+# Saving each image in subfolder.
+for name_img in list_data:
+    if name_img[-5:] != '.jpeg':
+        continue
+    if name_img[0] == '.':
+        continue
+    path_img = join(path_data, name_img)
+    img      = scipy.misc.imread(path_img)
+    name     = name_img[:-5]
+    lab      = eye2lab[name]
+    path_save_img = join(path_save, name)
+    if not isdir(path_save_img):
+        mkdir(path_save_img)
+    # Preprocessing the img.
+    img = img.astype(np.float32)
+    img -= np.min(img)
+    img /= np.max(img)
+    img = tight_crop(img)
+    img = scipy.misc.imresize(img, [size,size])
+    img = img.astype(np.float32)
+    img -= np.min(img)
+    img /= np.max(img)
+    img[:,:,0] = exposure.equalize_adapthist(img[:,:,0], clip_limit=0.03)
+    img[:,:,1] = exposure.equalize_adapthist(img[:,:,1], clip_limit=0.03)
+    img[:,:,2] = exposure.equalize_adapthist(img[:,:,2], clip_limit=0.03)
+    # Saving the image as h5
+    path_h5 = join(path_save_img, name + '.h5')
+    h5f = h5py.File(path_h5)
+    h5f.create_dataset('data', data=img)
+    h5f.create_dataset('label', data=lab)
+    h5f.create_dataset('name', data=name)
+    h5f.close()
