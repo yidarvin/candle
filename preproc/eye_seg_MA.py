@@ -5,10 +5,10 @@ from os.path import isdir,join
 import scipy
 import scipy.misc
 from skimage.filters import threshold_otsu
-from skimage import measure
+from skimage import measure,exposure
 
 # Variables
-size = 1024
+size = 512
 
 # Filepaths
 path_root = '/media/dnr/289A249A9A246692/data/eye_seg'
@@ -47,6 +47,9 @@ def tight_crop(img,ann,size=None):
         ann_crop = scipy.misc.imresize(ann_crop,[size,size],interp='nearest')
     img_crop = img_crop.astype(np.float32)
     img_crop /= 255
+    img_crop = img_crop[:,:,1]
+    img_crop = exposure.equalize_adapthist(img_crop, clip_limit=0.03)
+    img_crop = img_crop.reshape([img_crop.shape[0], img_crop.shape[1], 1])
     ann_crop = (ann_crop > 0) + 0
     ann_crop = scipy.ndimage.morphology.binary_dilation(ann_crop, iterations=size/56)
     ann_crop = ann_crop.astype(np.int64)
