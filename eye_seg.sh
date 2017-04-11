@@ -3,7 +3,7 @@ declare -r path_train=/home/dnr/Documents/data/eye_seg/training
 declare -r path_val=/home/dnr/Documents/data/eye_seg/validation
 #declare -r path_inf=/home/dnr/Documents/data/eye_seg/inference
 
-declare -r name=eye-seg
+declare -r name=ma-seg
 
 declare -r path_model=/home/dnr/modelState/$name.ckpt
 declare -r path_log=/home/dnr/logs/$name.txt
