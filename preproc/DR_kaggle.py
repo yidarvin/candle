@@ -4,7 +4,7 @@ from os import listdir, mkdir
 from os.path import isdir, join
 import scipy.misc
 from skimage.filters import threshold_otsu
-from skimage import measure
+from skimage import measure,exposure
 
 size = 512
 
@@ -75,6 +75,12 @@ for name_img in list_data:
     img = img.astype(np.float32)
     img -= np.min(img)
     img /= np.max(img)
+    img[:,:,0] = exposure.equalize_adapthist(img[:,:,0], clip_limit=0.03)
+    img[:,:,1] = exposure.equalize_adapthist(img[:,:,1], clip_limit=0.03)
+    img[:,:,2] = exposure.equalize_adapthist(img[:,:,2], clip_limit=0.03)
+    # Saving the image as .png
+    #path_png = join(path_save_img, name + '.png')
+    #scipy.misc.imsave(path_png, img)
     # Saving the image as h5
     path_h5 = join(path_save_img, name + '.h5')
     h5f = h5py.File(path_h5)
