@@ -9,4 +9,4 @@ declare -r path_model=/home/dnr/modelState/$name.ckpt
 declare -r path_log=/home/dnr/logs/$name.txt
 declare -r path_vis=/home/dnr/visualizations/$name
 
-CUDA_VISIBLE_DEVICES=1 python /home/dnr/FirstAid/train_CNNsegmentation.py --pTrain $path_train --pVal $path_val --pModel $path_model --pLog $path_log --pVis $path_vis --name $name --nGPU 1 --bs 16 --ep 50000 --lr 0.001
+CUDA_VISIBLE_DEVICES=0,1,2,3 python /home/dnr/FirstAid/train_CNNsegmentation.py --pTrain $path_train --pVal $path_val --pModel $path_model --pLog $path_log --pVis $path_vis --name $name --nGPU 4 --bs 16 --ep 50000 --lr 0.001
