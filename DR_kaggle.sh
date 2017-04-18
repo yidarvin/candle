@@ -8,4 +8,4 @@ declare -r name=DR_kaggle
 declare -r path_model=/home/dnr/modelState/$name.ckpt
 declare -r path_log=/home/dnr/logs/$name.txt
 
-python /home/dnr/FirstAid/train_CNNclassification.py --pTrain $path_train --pVal $path_val --pModel $path_model --pLog $path_log --name $name --nClass 5 --nGPU 4 --bs 128 --ep 50000 --lr 0.001
+python /home/dnr/FirstAid/train_CNNclassification.py --pTrain $path_train --pVal $path_val --pModel $path_model --pLog $path_log --name $name --nClass 5 --nGPU 4 --bs 32 --ep 50000 --lr 0.001
